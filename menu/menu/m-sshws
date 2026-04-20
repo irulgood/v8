@@ -1,0 +1,85 @@
+#!/bin/bash
+# My Telegram : https://t.me/MRST0RE
+# ==========================================
+# Color
+GREEN='\e[36m'
+RED='\033[0;31m'
+BGBLUE='\e[1;44m'
+ORANGE='\033[0;33m'
+BLUE='\033[1;36m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+BG='\E[44;1;39m'
+NC='\033[0;37m'
+WHITE='\033[0;37m'
+r="\033[1;31m"  #REDTERANG
+# ==========================================
+# Getting
+#IZIN SCRIPT
+#MYIP=$(curl -sS ipv4.icanhazip.com)
+
+clear
+# Valid Script
+#ipsaya=$(wget -qO- ipinfo.io/ip)
+#data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep #Date | sed -e 's/< Date: //')
+#date_list=$(date +"%Y-%m-%d" -d "$data_server")
+clear
+#Domain
+#domain=$(cat /etc/xray/domain)
+
+echo -e "\033[0;34m┌──────────────────────────────────────────┐\033[0m"
+echo -e "\033[0;34m│$NC \033[1;96m             SSH & OpenVPN              ${NC}\033[0;34m │$NC"
+echo -e "\033[0;34m└──────────────────────────────────────────┘\033[0m"
+echo -e "\033[0;34m┌──────────────────────────────────────────┐$NC"
+echo -e "\033[0;34m ${NC}${GREEN} [01]•${NC} Create SSH & OpenVPN Account${NC}"
+echo -e "\033[0;34m ${NC}${GREEN} [02]•${NC} Trial SSH & OpenVPN ${NC}"
+echo -e "\033[0;34m ${NC}${GREEN} [03]•${NC} Renew SSH & OpenVPN ${NC}"
+echo -e "\033[0;34m ${NC}${GREEN} [04]•${NC} Check User Login SSH & OpenVPN${NC}"
+echo -e "\033[0;34m ${NC}${GREEN} [05]•${NC} Daftar Member SSH & OpenVPN ${NC}"
+echo -e "\033[0;34m ${NC}${GREEN} [06]•${NC} Hapus SSH & OpenVpn Account ${NC}"
+echo -e "\033[0;34m ${NC}${GREEN} [07]•${NC} Hapus User Expired SSH & OpenVPN ${NC}"
+echo -e "\033[0;34m ${NC}${GREEN} [08]•${NC} Set up Autokill SSH ${NC}"
+echo -e "\033[0;34m ${NC}${GREEN} [09]•${NC} Cek User Multi Login SSH ${NC}"
+echo -e "\033[0;34m ${NC}${GREEN} [10]•${NC} Config SSH ACCOUNT ${NC}"
+echo -e "\033[0;34m ${NC}${GREEN} [00]•${NC} Back To Menu ${NC}"
+echo -e "\033[0;34m└──────────────────────────────────────────┘$NC"
+read -p "Select From Options [ 1 - 10 ] : " menu
+echo -e ""
+case $menu in
+1 | 01)
+    addssh
+    ;;
+2 | 02)
+    trial
+    ;;
+3 | 03)
+    renewssh
+    ;;
+4 | 04)
+    cekssh
+    ;;
+5 | 05)
+    member
+    ;;
+6 | 06)
+    delssh
+    ;;
+7 | 07)
+    delexp
+    ;;
+8 | 08)
+    autokill
+    ;;
+9 | 09)
+    ceklim
+    ;;
+10)
+    user-ssh
+    ;;
+0 | 00)
+menu
+;;
+*)
+    menu
+    ;;
+esac
