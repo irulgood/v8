@@ -24,14 +24,14 @@
 <pre><code>curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh && bash reinstall.sh Ubuntu 24.04 && reboot</code></pre>
 
 ### INSTALL SCRIPT 
-<pre><code>apt update -y && apt install -y wget curl && wget -q https://raw.githubusercontent.com/satria293/vip/main/setup.sh && chmod +x setup.sh && ./setup.sh
+<pre><code>apt update -y && apt install -y wget curl && wget -q https://raw.githubusercontent.com/irulgood/v7/main/setup.sh && chmod +x setup.sh && ./setup.sh
 </code></pre>
 
 ### PERINTAH UPDATE 
-<pre><code>wget -q https://raw.githubusercontent.com/satria293/vip/main/menu/update.sh && chmod +x update.sh && ./update.sh</code></pre>
+<pre><code>wget -q https://raw.githubusercontent.com/irulgood/v7/main/menu/update.sh && chmod +x update.sh && ./update.sh</code></pre>
 
 ### PERINTAH BACKUP KHUSUS
-<pre><code>wget -qO /usr/sbin/backupot "https://raw.githubusercontent.com/diah082/vip/main/menu/backupot" && chmod +x /usr/sbin/backupot && backupot</code></pre>
+<pre><code>wget -qO /usr/sbin/backupot "https://raw.githubusercontent.com/irulgood/v7/main/menu/backupot" && chmod +x /usr/sbin/backupot && backupot</code></pre>
 
 ### TESTED ON OS 
 - UBUNTU 20.04 22 24.04 24.10
