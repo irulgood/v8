@@ -76,4 +76,4 @@ mkdir -p /etc/vless
 mkdir -p /etc/trojan
 mkdir -p /root/udp
 clear
-rm -r tools.sh
+# tidak menghapus source repo lokal
