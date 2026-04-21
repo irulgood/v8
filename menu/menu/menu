@@ -197,7 +197,7 @@ m-bkp
 ;;
 7 | 07)
 clear
-wget https://raw.githubusercontent.com/arivpnstores/v7/main/udp-custom.sh && chmod +x udp-custom.sh && ./udp-custom.sh && rm udp-custom.sh
+bash "${V7_REPO_DIR:-/opt/v8-installer/current}/install/udp-custom.sh"
 ;;
 8 | 08)
 clear
@@ -205,7 +205,7 @@ clear
 ;;
 9 | 09)
 clear
-wget https://raw.githubusercontent.com/arivpnstores/v7/main/update.sh && chmod +x update.sh && ./update.sh
+bash "${V7_REPO_DIR:-/opt/v8-installer/current}/menu/update.sh"
 ;;
 10 | 10)
 clear

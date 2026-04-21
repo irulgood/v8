@@ -58,7 +58,7 @@ clear
 
 
 
-REPO="https://raw.githubusercontent.com/arivpnstores/v7/main/limit/"
+V7_REPO_DIR="${V7_REPO_DIR:-/opt/v8-installer/current}"
 # fixhap fix Haproxy
 clear
 echo -e "${BlueCyan} ------------------------- ${Xark} "
@@ -74,12 +74,12 @@ rm -fr /etc/xray/domain
 echo "${domain}" > /etc/xray/domain
 systemctl stop haproxy
 systemctl stop nginx
-wget -O /etc/haproxy/haproxy.cfg "${REPO}haproxy.cfg" >/dev/null 2>&1
-wget -O /etc/nginx/conf.d/xray.conf "${REPO}xray.conf" >/dev/null 2>&1
+install -D -m 0644 "$V7_REPO_DIR/install/haproxy.cfg" /etc/haproxy/haproxy.cfg >/dev/null 2>&1
+install -D -m 0644 "$V7_REPO_DIR/install/xray.conf" /etc/nginx/conf.d/xray.conf >/dev/null 2>&1
 sed -i "s/xxx/${domain}/g" /etc/haproxy/haproxy.cfg
 echo "" >> /etc/haproxy/haproxy.cfg
 sed -i "s/xxx/${domain}/g" /etc/nginx/conf.d/xray.conf
-curl ${REPO}nginx.conf > /etc/nginx/nginx.conf
+install -D -m 0644 "$V7_REPO_DIR/install/nginx.conf" /etc/nginx/nginx.conf
 
 cat /etc/xray/xray.crt /etc/xray/xray.key | tee /etc/haproxy/hap.pem
 
