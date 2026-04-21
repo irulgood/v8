@@ -1,67 +1,25 @@
-#!/bin/bash
-# ==========================================
-# Limit Service Installer - Newbie Store
-# Author: Ansendant (modified by ChatGPT)
-# Repo: http://raw.githubusercontent.com/irulgood/v7/main/
-# ==========================================
+#!/usr/bin/env bash
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+export V7_REPO_DIR="${V7_REPO_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+. "$V7_REPO_DIR/lib/local_repo.sh"
 
-REPO="http://raw.githubusercontent.com/irulgood/v7/main/"
-
-# ------------------------------------------
-# Prepare systemd dan direktori kerja
-# ------------------------------------------
-cd
 systemctl daemon-reload
 
-# ------------------------------------------
-# Download systemd service untuk limit klasik
-# ------------------------------------------
-echo "[INFO] Mengunduh file systemd service versi lama..."
-wget -q -O /etc/systemd/system/limitvmess.service "${REPO}install/limitvmess.service" && chmod +x /etc/systemd/system/limitvmess.service
-wget -q -O /etc/systemd/system/limitvless.service "${REPO}install/limitvless.service" && chmod +x /etc/systemd/system/limitvless.service
-wget -q -O /etc/systemd/system/limittrojan.service "${REPO}install/limittrojan.service" && chmod +x /etc/systemd/system/limittrojan.service
+echo "[INFO] Menyalin file systemd limit klasik..."
+v7_copy_file install/limitvmess.service /etc/systemd/system/limitvmess.service 0755
+v7_copy_file install/limitvless.service /etc/systemd/system/limitvless.service 0755
+v7_copy_file install/limittrojan.service /etc/systemd/system/limittrojan.service 0755
 
-# Jika mau aktifkan Shadowsocks
-# wget -q -O /etc/systemd/system/limitshadowsocks.service "${REPO}install/limitshadowsocks.service" && chmod +x /etc/systemd/system/limitshadowsocks.service
-
-# ------------------------------------------
-# Reload daemon dan enable service lama
-# ------------------------------------------
-echo "[INFO] Reload systemd daemon..."
 systemctl daemon-reload
+systemctl enable --now limitvmess limitvless limittrojan >/dev/null 2>&1 || true
+systemctl start limitvmess limitvless limittrojan >/dev/null 2>&1 || true
 
-echo "[INFO] Enable & start classic services..."
-systemctl enable --now limitvmess
-systemctl enable --now limitvless
-systemctl enable --now limittrojan
-# systemctl enable --now limitshadowsocks
+echo "[INFO] Menyalin script limit-ip template..."
+v7_copy_file install/unlockxray /usr/local/sbin/unlockxray 0755
+v7_copy_file install/limit-ip /usr/local/sbin/limit-ip 0755
+sed -i 's///' /usr/local/sbin/limit-ip
 
-# ------------------------------------------
-# Start service klasik (jika belum jalan)
-# ------------------------------------------
-systemctl start limitvmess
-systemctl start limitvless
-systemctl start limittrojan
-# systemctl start limitshadowsocks
-
-echo -e "\033[1;32m[SUCCESS]\033[0m Semua limit service klasik berhasil diaktifkan!"
-echo
-function limit-ip(){
-# =======================================================
-# ✨ Tambahan: versi systemd-template baru (limit-ip@)
-# =======================================================
-
-echo "[INFO] Menambahkan versi systemd-template (limit-ip@)..."
-# Menghapus limit ip lama
-rm -rf /usr/local/sbin/limit-ip
-
-# Script utama
-wget -q -O /usr/local/sbin/unlockxray "${REPO}install/unlockxray" && chmod +x /usr/local/sbin/unlockxray
-wget -q -O /usr/local/sbin/limit-ip "${REPO}install/limit-ip" && chmod +x /usr/local/sbin/limit-ip
-cd /usr/local/sbin/
-sed -i 's/\r//' limit-ip
-cd
-# Template service
 cat > /etc/systemd/system/limit-ip@.service <<'EOF'
 [Unit]
 Description=Limit-IP AutoLock for %i
@@ -74,7 +32,6 @@ ExecStart=/usr/local/sbin/limit-ip %i
 Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 EOF
 
-# Template timer
 cat > /etc/systemd/system/limit-ip@.timer <<'EOF'
 [Unit]
 Description=Run limit-ip %i every 1 minute
@@ -89,17 +46,7 @@ Unit=limit-ip@%i.service
 WantedBy=timers.target
 EOF
 
-# Reload dan aktifkan
 systemctl daemon-reload
-systemctl enable --now limit-ip@vmip.timer
-systemctl enable --now limit-ip@vlip.timer
-systemctl enable --now limit-ip@trip.timer
+systemctl enable --now limit-ip@vmip.timer limit-ip@vlip.timer limit-ip@trip.timer >/dev/null 2>&1 || true
 
-echo
-echo "[INFO] Timer instance aktif:"
-systemctl list-timers | grep limit-ip@ || echo "Belum aktif, cek manual dengan: systemctl list-timers"
-echo
-echo -e "\033[1;32m[SUCCESS]\033[0m Sistem limit-ip template berhasil diinstal & berjalan otomatis!"
-echo
-}
-limit-ip
+echo "[SUCCESS] Sistem limit service berhasil dipasang dari repo lokal."

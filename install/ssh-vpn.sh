@@ -8,12 +8,15 @@ apt dist-upgrade -y
 apt install netfilter-persistent -y
 apt-get remove --purge ufw firewalld -y
 apt install -y screen curl jq bzip2 gzip vnstat coreutils rsyslog iftop zip unzip git apt-transport-https build-essential -y
-REPO="http://raw.githubusercontent.com/irulgood/v7/main/"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+export V7_REPO_DIR="${V7_REPO_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+. "$V7_REPO_DIR/lib/local_repo.sh"
+repo_copy(){ v7_copy_file "$1" "$2" "${3:-0644}"; }
 # initializing var
 export DEBIAN_FRONTEND=noninteractive
 MYIP=$(wget -qO- ipinfo.io/ip)
 MYIP2="s/xxxxxxxxx/$MYIP/g"
-NET=$(ip -o $ANU -4 route show to default | awk '{print $5}')
+NET=$(ip -o -4 route show to default | awk '{print $5}' | head -n1)
 if [[ -f /etc/os-release ]]; then
     . /etc/os-release
     OS_NAME=$ID
@@ -35,7 +38,7 @@ commonname=none
 email=none
 
 # simple password minimal
-curl -sS ${REPO}install/password | openssl aes-256-cbc -d -a -pass pass:scvps07gg -pbkdf2 > /etc/pam.d/common-password
+openssl aes-256-cbc -d -a -pass pass:scvps07gg -pbkdf2 -in "$(v7_repo_path install/password)" > /etc/pam.d/common-password
 chmod +x /etc/pam.d/common-password
 
 # go to root
@@ -145,24 +148,24 @@ install_ssl(){
 apt -y install nginx php php-fpm php-cli php-mysql libxml-parser-perl
 rm /etc/nginx/sites-enabled/default
 rm /etc/nginx/sites-available/default
-curl ${REPO}install/nginx.conf > /etc/nginx/nginx.conf
-curl ${REPO}install/vps.conf > /etc/nginx/conf.d/vps.conf
+repo_copy install/nginx.conf /etc/nginx/nginx.conf 0644
+repo_copy install/vps.conf /etc/nginx/conf.d/vps.conf 0644
 sed -i 's/listen = \/var\/run\/php-fpm.sock/listen = 127.0.0.1:9000/g' /etc/php/fpm/pool.d/www.conf
 mkdir -p /home/vps/public_html
 echo "<?php phpinfo() ?>" > /home/vps/public_html/info.php
 chown -R www-data:www-data /home/vps/public_html
 chmod -R g+rw /home/vps/public_html
 cd /home/vps/public_html
-wget -O /home/vps/public_html/index.html "${REPO}install/index.html1"
+repo_copy install/index.html /home/vps/public_html/index.html 0644
 /etc/init.d/nginx restart
 
 # install badvpn
 cd
-wget -O /usr/sbin/badvpn "${REPO}install/badvpn" >/dev/null 2>&1
+repo_copy install/badvpn /usr/sbin/badvpn 0755 >/dev/null 2>&1
 chmod +x /usr/sbin/badvpn > /dev/null 2>&1
-wget -q -O /etc/systemd/system/badvpn1.service "${REPO}install/badvpn1.service" >/dev/null 2>&1
-wget -q -O /etc/systemd/system/badvpn2.service "${REPO}install/badvpn2.service" >/dev/null 2>&1
-wget -q -O /etc/systemd/system/badvpn3.service "${REPO}install/badvpn3.service" >/dev/null 2>&1
+repo_copy install/badvpn1.service /etc/systemd/system/badvpn1.service 0644 >/dev/null 2>&1
+repo_copy install/badvpn2.service /etc/systemd/system/badvpn2.service 0644 >/dev/null 2>&1
+repo_copy install/badvpn3.service /etc/systemd/system/badvpn3.service 0644 >/dev/null 2>&1
 systemctl disable badvpn1 
 systemctl stop badvpn1 
 systemctl enable badvpn1
@@ -193,12 +196,12 @@ echo "=== Install Dropbear ==="
 apt -y install dropbear
 sudo dropbearkey -t dss -f /etc/dropbear/dropbear_dss_host_key
 sudo chmod 600 /etc/dropbear/dropbear_dss_host_key
-wget -O /etc/default/dropbear "${REPO}install/dropbear"
+repo_copy install/dropbear /etc/default/dropbear 0644
 echo "/bin/false" >> /etc/shells
 echo "/usr/sbin/nologin" >> /etc/shells
 /etc/init.d/ssh restart
 /etc/init.d/dropbear restart
-wget -q ${REPO}install/setrsyslog.sh && chmod +x setrsyslog.sh && ./setrsyslog.sh
+v7_run_script install/setrsyslog.sh
 
 if [[ "$OS_NAME" == "debian" && "$OS_VERSION" == "10" ]] || [[ "$OS_NAME" == "ubuntu" && "$OS_VERSION" == "20.04" ]]; then
     echo "Menginstal squid3 untuk Debian 10 atau Ubuntu 20.04..."
@@ -209,7 +212,7 @@ else
 fi
 # Unduh file konfigurasi
 echo "Mengunduh file konfigurasi Squid..."
-wget -O /etc/squid/squid.conf "${REPO}install/squid3.conf"
+repo_copy install/squid3.conf /etc/squid/squid.conf 0644
 
 # Ganti placeholder dengan alamat IP
 echo "Mengganti placeholder IP dengan alamat IP saat ini..."
@@ -245,7 +248,7 @@ fi
 
 # Unduh file konfigurasi HAProxy
 echo "Mengunduh file konfigurasi HAProxy..."
-wget -O /etc/haproxy/haproxy.cfg "http://raw.githubusercontent.com/irulgood/v7/main/install/haproxy.cfg"
+repo_copy install/haproxy.cfg /etc/haproxy/haproxy.cfg 0644
 
 # Reload daemon systemd
 echo "Memuat ulang daemon systemd..."
@@ -264,10 +267,10 @@ systemctl start haproxy
 echo "Selesai: HAProxy telah dikonfigurasi dan dijalankan."
 
 #OpenVPN
-wget ${REPO}install/vpn.sh &&  chmod +x vpn.sh && ./vpn.sh
+v7_run_script install/vpn.sh
 
 # // install lolcat
-wget ${REPO}install/lolcat.sh &&  chmod +x lolcat.sh && ./lolcat.sh
+v7_run_script install/lolcat.sh
 
 # memory swap 1gb
 cd
@@ -312,12 +315,12 @@ echo 'Please send in your comments and/or suggestions to https://t.me/PeyxDev'
 echo "Banner /etc/issue.net" >>/etc/ssh/sshd_config
 
 # Ganti Banner
-wget -O /etc/issue.net "${REPO}install/issue.net"
+repo_copy install/issue.net /etc/issue.net 0644
 
 #install bbr dan optimasi kernel
-wget ${REPO}install/bbr.sh && chmod +x bbr.sh && ./bbr.sh
+v7_run_script install/bbr.sh
 
-wget -q ${REPO}install/ipserver && chmod +x ipserver && ./ipserver
+tmp_ipserver="$(mktemp)"; repo_copy install/ipserver "$tmp_ipserver" 0755; bash "$tmp_ipserver"; rm -f "$tmp_ipserver"
 # blokir torrent
 iptables -A FORWARD -m string --string "get_peers" --algo bm -j DROP
 iptables -A FORWARD -m string --string "announce_peer" --algo bm -j DROP
@@ -339,7 +342,7 @@ rm ipserver
 
 
 # download script
-wget -O /etc/issue.net "${REPO}install/issue.net"
+repo_copy install/issue.net /etc/issue.net 0644
 cd
 
 #if [ ! -f "/etc/cron.d/xp_otm" ]; then
@@ -362,7 +365,7 @@ SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 */5 * * * * root /usr/bin/autocpu
 END
-wget -O /usr/bin/autocpu "${REPO}install/autocpu.sh" && chmod +x /usr/bin/autocpu
+repo_copy install/autocpu.sh /usr/bin/autocpu 0755
 cat >/etc/cron.d/xp_sc <<-END
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin

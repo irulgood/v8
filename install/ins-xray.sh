@@ -12,7 +12,9 @@ CYAN='\033[0;36m'
 LIGHT='\033[0;37m'
 # ==========================================
 
-REPO="http://raw.githubusercontent.com/irulgood/v7/main/"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+export V7_REPO_DIR="${V7_REPO_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+. "$V7_REPO_DIR/lib/local_repo.sh"
 echo -e ""
 date
 echo ""
@@ -397,8 +399,8 @@ WantedBy=multi-user.target
 EOF
 
 #nginx config
-wget -O /etc/nginx/conf.d/xray.conf "${REPO}install/xray.conf"
-wget -O /etc/haproxy/haproxy.cfg "${REPO}install/haproxy.cfg"
+v7_copy_file install/xray.conf /etc/nginx/conf.d/xray.conf 0644
+v7_copy_file install/haproxy.cfg /etc/haproxy/haproxy.cfg 0644
 sed -i "s/xxx/${domain}/" /etc/nginx/conf.d/xray.conf
 sed -i "s/xxx/${domain}/" /etc/haproxy/haproxy.cfg
 cat /etc/xray/xray.key /etc/xray/xray.crt | tee /etc/haproxy/hap.pem
