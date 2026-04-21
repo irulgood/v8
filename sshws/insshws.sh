@@ -1,36 +1,24 @@
-#!/bin/bash
-# Proxy For Edukasi & Imclass
+#!/usr/bin/env bash
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+export V7_REPO_DIR="${V7_REPO_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+. "$V7_REPO_DIR/lib/local_repo.sh"
+
 file_path="/etc/handeling"
-
-# Cek apakah file ada
-if [ ! -f "$file_path" ]; then
-    # Jika file tidak ada, buat file dan isi dengan dua baris
-    echo -e "AnsendantVpn Server Connected\nBLUE" | sudo tee "$file_path" > /dev/null
-    echo "File '$file_path' berhasil dibuat."
-else
-    # Jika file ada, cek apakah isinya kosong
-    if [ ! -s "$file_path" ]; then
-        # Jika file ada tetapi kosong, isi dengan dua baris
-        echo -e "AnsendantVpn Server Connected\nBlue" | sudo tee "$file_path" > /dev/null
-        echo "File '$file_path' kosong dan telah diisi."
-    else
-        # Jika file ada dan berisi data, tidak lakukan apapun
-        echo "File '$file_path' sudah ada dan berisi data."
-    fi
+if [ ! -s "$file_path" ]; then
+  printf 'AnsendantVpn Server Connected
+BLUE
+' > "$file_path"
 fi
-# Link Hosting Kalian
-sudo apt install python3
 
-wget -O /usr/bin/ws "http://raw.githubusercontent.com/irulgood/v7/main/sshws/ws"
-chmod +x /usr/bin/ws
-wget -O /usr/bin/config.con "http://raw.githubusercontent.com/irulgood/v7/main/sshws/config.conf"
-chmod +x /usr/bin/config.conf
+apt-get install -y python3 >/dev/null 2>&1
+v7_copy_file sshws/ws /usr/bin/ws 0755
+v7_copy_file sshws/config.conf /usr/bin/config.conf 0644
+v7_copy_file sshws/ws /usr/local/bin/ws-ovpn 0755
 
-# Installing Service
-cat > /etc/systemd/system/ws.service << END
+cat > /etc/systemd/system/ws.service <<'END'
 [Unit]
-Description=Proxy Mod By Newbie Store 
-Documentation=https://t.me/newbie_store24
+Description=Proxy Mod By Newbie Store
 After=network.target nss-lookup.target
 
 [Service]
@@ -46,19 +34,9 @@ Restart=on-failure
 WantedBy=multi-user.target
 END
 
-systemctl daemon-reload
-systemctl enable ws.service
-systemctl start ws.service
-systemctl restart ws.service
-
-wget -O /usr/local/bin/ws-ovpn "http://raw.githubusercontent.com/irulgood/v7/main/sshws/ws"
-chmod +x /usr/local/bin/ws-ovpn
-
-# Installing Service
-cat > /etc/systemd/system/ws-ovpn.service << END
+cat > /etc/systemd/system/ws-ovpn.service <<'END'
 [Unit]
 Description=Proxy Mod By NEWBIE STORE
-Documentation=https://t.me/newbie_store24
 After=network.target nss-lookup.target
 
 [Service]
@@ -75,6 +53,4 @@ WantedBy=multi-user.target
 END
 
 systemctl daemon-reload
-systemctl enable ws-ovpn
-systemctl restart ws-ovpn
-
+systemctl enable --now ws.service ws-ovpn.service >/dev/null 2>&1 || true
